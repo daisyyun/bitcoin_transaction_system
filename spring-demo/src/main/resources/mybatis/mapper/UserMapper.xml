@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.yaopeiyun.mapper.UserMapper">
+
+    <select id="getUserAddrById" resultType="java.lang.String">
+        select  addr  from block_user where id = #{id}
+    </select>
+
+    <select id="getUserIdByAddr" resultType="int">
+        select   IFNULL(MAX(id),-1) as id from block_user where addr = #{addr}
+    </select>
+
+    <select id="getUserBalance" resultType="java.lang.Double">
+        select  balance  from block_user where addr = #{addr}
+    </select>
+    <select id="getUserIn" resultType="java.lang.Integer">
+        select  in_value  from block_user where addr = #{addr}
+    </select>
+    <select id="getUserOut" resultType="java.lang.Integer">
+        select  out_value  from block_user where addr = #{addr}
+    </select>
+    <select id="getUserCircle" resultType="com.yaopeiyun.entities.Circle">
+        select  id,friend,value  from block_circle where id = #{id}
+    </select>
+
+</mapper>

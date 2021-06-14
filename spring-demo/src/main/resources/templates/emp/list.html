@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<!-- saved from url=(0052)http://getbootstrap.com/docs/4.0/examples/dashboard/ -->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="description" content="">
+		<meta name="author" content="">
+
+		<title>Transaction Details</title>
+
+		<!-- Bootstrap core CSS -->
+		<link href="asserts/css/bootstrap.min.css" th:href="@{/webjars/bootstrap/4.3.1/css/bootstrap.css}" rel="stylesheet">
+		<link rel="stylesheet" th:href="@{/asserts/css/daterangepicker.css}">
+		<!-- Custom styles for this template -->
+		<link href="asserts/css/dashboard.css" th:href="@{/asserts/css/dashboard.css}" rel="stylesheet">
+		<style type="text/css">
+			/* Chart.js */
+			
+			@-webkit-keyframes chartjs-render-animation {
+				from {
+					opacity: 0.99
+				}
+				to {
+					opacity: 1
+				}
+			}
+			
+			@keyframes chartjs-render-animation {
+				from {
+					opacity: 0.99
+				}
+				to {
+					opacity: 1
+				}
+			}
+			
+			.chartjs-render-monitor {
+				-webkit-animation: chartjs-render-animation 0.001s;
+				animation: chartjs-render-animation 0.001s;
+			}
+		</style>
+	</head>
+
+	<body>
+		<!--引入抽取的topbar-->
+		<!--模板名：会使用thymeleaf的前后缀配置规则进行解析-->
+		<div th:replace="commons/bar::topbar"></div>
+
+		<div class="container-fluid">
+			<div class="row">
+				<!--引入侧边栏-->
+				<div th:replace="commons/bar::#sidebar(activeUri='transcations')"></div>
+
+				<main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+					<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 ">
+						<h1 class="h2">Transactions Details</h1>
+						<div id="userop" class="btn-toolbar mb-md-0" >
+<!--							<div class="btn-group mr-2">-->
+<!--								<button class="btn btn-sm btn-outline-secondary" th:onclick="'javascript:getInput()'">Input</button>-->
+<!--								<button class="btn btn-sm btn-outline-secondary" th:onclick="'javascript:getOutput()'">Output</button>-->
+<!--							</div>-->
+							<div class="dropdown m-1" >
+								<a id="dropdownMenuLink" class="btn btn-secondary dropdown-toggle bg-info" href="#" role="button"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+									Show All
+								</a>
+								<div id="dropdowns" class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+									<a class="dropdown-item" th:href="'javascript:screen(0)'">Show All</a>
+									<a class="dropdown-item" th:href="'javascript:screen(1)'">Input Only</a>
+									<a class="dropdown-item" th:href="'javascript:screen(2)'">Output Only</a>
+								</div>
+							</div>
+
+							<button  id="sandbox-container" class="btn btn-sm btn-outline-secondary dropdown-toggle m-1">
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+									 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar">
+									<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+									<line x1="16" y1="2" x2="16" y2="6"></line>
+									<line x1="8" y1="2" x2="8" y2="6"></line>
+									<line x1="3" y1="10" x2="21" y2="10"></line>
+								</svg>
+								Choose week
+							</button>
+<!--							<button class="btn btn-sm btn-outline-secondary m-1" th:onclick="'javascript:screen()'">Refresh</button>-->
+						</div>
+					</div>
+					<div id="tableData" th:fragment="tableData" >
+						<div class="alert alert-warning" th:if="${pageInfo.pages==0}">
+							<strong>WARNING!</strong> The user has no data!
+						</div>
+						<div class="table-responsive" th:if="${pageInfo.pages!=0}">
+							<table class="table table-striped table-sm">
+								<thead>
+									<tr>
+										<th>#</th>
+										<th>from_node_num</th>
+										<th>to_node_num</th>
+										<th>value($)</th>
+										<th>date</th>
+									</tr>
+								</thead>
+								<tbody >
+									<tr th:each="transcation,itemStat:${transcations}">
+										<td th:text="${itemStat.count}"></td>
+										<td th:text="${transcation.fromNodeNum}"></td>
+										<td th:text="${transcation.toNodeNum}"></td>
+										<td th:text="${transcation.value}"></td>
+										<td th:text="${#dates.format(transcation.date, 'yyyy-MM-dd')}"></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+
+						<!--显示分页信息-->
+						<div class="modal-footer no-margin-top" th:if="${pageInfo.pages!=0}">
+							<!--总记录数小于7-->
+							<ul class="pagination" th:if="${pageInfo.pages le 7}" >
+								<li  class="page-item" >
+									<a class="page-link" th:href="'javascript:fresh(1,'+${userid}+')'" >首页</a>
+								</li>
+
+								<li class="page-item" th:if="${pageInfo.hasPreviousPage}">
+									<a class="page-link"  th:href="'javascript:fresh('+${pageInfo.prePage}+','+${userid}+')'">
+										<i class="ace-icon fa fa-angle-double-left">Pre</i>
+									</a>
+								</li>
+								<!--遍历条数-->
+								<li class="page-item" th:each="index:${#numbers.sequence(1,pageInfo.pages)}" >
+									<a class="page-link"  th:href="'javascript:fresh('+${index}+','+${userid}+')'" th:text="${index}"
+									   th:if="${index != pageInfo.pageNum}"></a>
+									<span class="page-link" style="font-weight: bold;background: #6faed9;" th:if="${index == pageInfo.pageNum}" th:text="${index}" ></span>
+								</li>
+
+								<li class="page-item" th:if="${pageInfo.hasNextPage}">
+									<a class="page-link" th:href="'javascript:fresh('+${pageInfo.nextPage}+','+${userid}+')'">
+										<i class="ace-icon fa fa-angle-double-right">Next</i>
+									</a>
+								</li>
+
+								<li class="page-item" >
+									<a class="page-link" th:href="'javascript:fresh('+${pageInfo.pages}+','+${userid}+')'" >尾页</a>
+								</li>
+
+							</ul>
+							<!--总记录数大于7-->
+							<ul class="pagination" th:if="${pageInfo.pages gt 7}">
+								<li  class="page-item" >
+									<a class="page-link"  th:href="'javascript:fresh(1,'+${userid}+')'">首页</a>
+								</li>
+
+								<li class="page-item" th:if="${pageInfo.hasPreviousPage}">
+									<a class="page-link" href="#" th:href="'javascript:fresh('+${pageInfo.prePage}+','+${userid}+')'">
+										<i class="ace-icon fa fa-angle-double-left">Pre</i>
+									</a>
+								</li>
+								<!--遍历条数-->
+								<!-- 当前页面小于等于4 -->
+								<li class="page-item" th:if="${pageInfo.pageNum le 4}" th:each="index:${#numbers.sequence(2,5)}" >
+									<a class="page-link" href="#" th:href="'javascript:fresh('+${index}+','+${userid}+')'" th:text="${index}" th:if="${index != pageInfo.pageNum}"></a>
+									<span class="page-link" style="font-weight: bold;background: #6faed9;" th:if="${index == pageInfo.pageNum}" th:text="${index}" ></span>
+								</li>
+								<li th:if="${pageInfo.pageNum le 4}" class="page-item">
+									<a  class="page-link" href="#" th:href="'javascript:fresh(6,'+${userid}+')'">...</a>
+								</li>
+
+								<!-- 最后一页与当前页面之差小于等于3 -->
+								<li th:if="${pageInfo.pages-pageInfo.pageNum le 3}" class="page-item">
+									<a  class="page-link" href="#" th:href="'javascript:fresh('+${pageInfo.pages-5}+','+${userid}+')'">...</a>
+								</li>
+								<li th:if="${pageInfo.pages-pageInfo.pageNum le 3}" th:each="nav:${#numbers.sequence(pageInfo.pages-4,pageInfo.pages-1)}"  class="page-item">
+									<a class="page-link" href="#" th:href="'javascript:fresh('+${nav}+','+${userid}+')'" th:text="${nav}" th:if="${nav != pageInfo.pageNum}"></a>
+									<span class="page-link" style="font-weight: bold;background: #6faed9;" th:if="${nav == pageInfo.pageNum}" th:text="${nav}" ></span>
+								</li>
+
+								<!-- 最后一页与当前页面之差大于3 且当前页面大于4 -->
+								<li th:if="${(pageInfo.pageNum gt 4) && (pageInfo.pages-pageInfo.pageNum gt 3)}" class="page-item">
+									<a class="page-link" href="#" th:href="'javascript:fresh('+${pageInfo.pageNum-2}+','+${userid}+')'">...</a>
+								</li>
+								<li th:if="${(pageInfo.pageNum gt 4) && (pageInfo.pages-pageInfo.pageNum gt 3)}" th:each="nav:${#numbers.sequence(pageInfo.pageNum-1,pageInfo.pageNum+1)}"
+									class="page-item">
+									<a class="page-link" href="#" th:href="'javascript:fresh('+${nav}+','+${userid}+')'" th:text="${nav}" th:if="${nav != pageInfo.pageNum}"></a>
+									<span class="page-link" style="font-weight: bold;background: #6faed9;" th:if="${nav == pageInfo.pageNum}" th:text="${nav}" ></span>
+								</li>
+								<li th:if="${(pageInfo.pageNum gt 4) && (pageInfo.pages-pageInfo.pageNum gt 3)}" class="page-item">
+									<a class="page-link" href="#" th:href="'javascript:fresh('+${pageInfo.pageNum+2}+','+${userid}+')'">...</a>
+								</li>
+
+								<li class="page-item" th:if="${pageInfo.hasNextPage}">
+									<a class="page-link" href="#" th:href="'javascript:fresh('+${pageInfo.nextPage}+','+${userid}+')'">
+										<i class="ace-icon fa fa-angle-double-right">Next</i>
+									</a>
+								</li>
+
+								<li class="page-item" >
+									<a class="page-link" href="#" th:href="'javascript:fresh('+${pageInfo.pages}+','+${userid}+')'">尾页</a>
+								</li>
+
+							</ul>
+
+						</div>
+
+					</div>
+<!--					<div class="col-md-12">-->
+<!--						<p class="center-pill">当前第 [[${pageInfo.pageNum}]]页,共 [[${pageInfo.pages}]] 页.一共 [[${pageInfo.total}]] 条记录</p>-->
+
+<!--					</div>-->
+
+<!--					<input type="hidden" th:value="${transcations}" id="allTrans"/>-->
+				</main>
+
+			</div>
+		</div>
+
+		<!-- Bootstrap core JavaScript
+    ================================================== -->
+		<!-- Placed at the end of the document so the pages load faster -->
+		<script type="text/javascript" src="asserts/js/jquery-3.2.1.slim.min.js" th:src="@{/webjars/jquery/3.0.0/jquery.js}"></script>
+		<script type="text/javascript" src="asserts/js/popper.min.js" th:src="@{/webjars/popper.js/1.14.3/umd/popper.js}"></script>
+		<script type="text/javascript" src="asserts/js/bootstrap.min.js" th:src="@{/webjars/bootstrap/4.3.1/js/bootstrap.js}"></script>
+		<script type="text/javascript" src="asserts/js/moment.min.js" th:src="@{/asserts/js/moment.min.js}"></script>
+		<script type="text/javascript" src="asserts/js/daterangepicker.js" th:src="@{/asserts/js/daterangepicker.js}"></script>
+
+		<!-- Icons -->
+		<script type="text/javascript" src="asserts/js/feather.min.js" th:src="@{/asserts/js/feather.min.js}"></script>
+		<script>
+			feather.replace()
+		</script>
+		<script>
+			window.onload= function  change(){
+				var list = document.getElementById("dropdowns").getElementsByTagName("a");
+				for(i=0;i<list.length;i++){
+					list[i].onclick = function(){
+						$("#dropdownMenuLink").html(this.innerHTML);
+					}
+				}
+			}
+		</script>
+
+		<script>
+			var uid = null;
+			var status = 0;
+			var date = "";
+			//用户搜索处理函数
+			$('#addr').on("keydown",function(event){
+				var keyCode = event.keyCode || event.which;
+				if(keyCode == "13"){
+					searchAddr();
+					$("#addr").blur();
+				}
+			});
+			//输入地址查询用户交易
+			function searchAddr() {
+				var addr = $("#addr").val();
+				//去掉空格
+				addr = addr.replace(/^\s*|\s*$/g,"");
+				if(addr!=""){
+
+					$.post("/user/getId", {'useraddr':addr},function (results) {
+						if(results==-1){
+							alert("User is not exist!");
+							uid = null;
+							location.reload(true);
+						}else{
+							// sessionStorage.setItem('userid',results);
+							uid = results;
+							fresh(1,results);
+						}
+					});
+
+				}else{
+					location.reload(true);
+					uid = null;
+				}
+			}
+			function fresh(page,userid) {
+				if(userid==null){
+					$.get("/transcations",
+							{page: page,date:date},
+							function (data) {
+								$('#tableData').html(data);
+							});
+				}else{
+					// console.log(date);
+					$.get("/transcations",
+							{page: page, userid: userid,status:status,date:date},
+							function (data) {
+								$('#tableData').html(data);
+							});
+				}
+			}
+			function screen(str) {
+				status = str;
+				if(uid!=null){
+
+					$.get("/transcations",
+							{userid:uid,page:1,status:status,date:date},
+							function (data) {
+								$('#tableData').html(data);
+							});
+				}else{
+					alert("Please enter address!");
+				}
+
+			}
+
+		</script>
+		<script type="text/javascript">
+			$('#sandbox-container').daterangepicker({
+				format: 'yyyy-MM-dd',
+				startDate: moment(new Date(2015,7,7)), //设置开始日期
+				endDate: moment(new Date(2016,2,29)), //设置结束日期
+				maxDate:moment(new Date(2016,2,29)),
+				minDate:moment(new Date(2015,7,7)),
+				timePickerSeconds:false,
+				showDropdowns : true,
+				locale: {format: "YYYY/MM/DD"}
+			}, function (start, end) {
+				timeRangeChange = [start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD')];
+				// console.log(timeRangeChange);
+				date = timeRangeChange.join(',');
+				fresh(1,uid);
+			});
+		</script>
+	</body>
+</html>

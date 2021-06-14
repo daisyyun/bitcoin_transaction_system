@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Balance & Analysis</title>
+    <!-- Bootstrap core CSS -->
+    <link href="asserts/css/bootstrap.min.css" th:href="@{/webjars/bootstrap/4.3.1/css/bootstrap.css}" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="asserts/css/dashboard.css" th:href="@{/asserts/css/dashboard.css}" rel="stylesheet">
+    <style type="text/css">
+        /* Chart.js */
+
+        @-webkit-keyframes chartjs-render-animation {
+            from {
+                opacity: 0.99
+            }
+            to {
+                opacity: 1
+            }
+        }
+
+        @keyframes chartjs-render-animation {
+            from {
+                opacity: 0.99
+            }
+            to {
+                opacity: 1
+            }
+        }
+
+        .chartjs-render-monitor {
+            -webkit-animation: chartjs-render-animation 0.001s;
+            animation: chartjs-render-animation 0.001s;
+        }
+
+    </style>
+</head>
+
+<body onload="show()">
+    <!--引入抽取的topbar-->
+    <!--模板名：会使用thymeleaf的前后缀配置规则进行解析-->
+    <div th:replace="commons/bar::topbar"></div>
+    <div class="container-fluid">
+
+        <div class="row">
+            <!--引入侧边栏-->
+            <div th:replace="commons/bar::#sidebar(activeUri='balance')"></div>
+            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+<!--                <h1>test</h1>-->
+                <div class="row mb-2">
+                    <div class="col-md-12">
+                        <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-300 position-relative">
+                            <div class="col p-4 d-flex flex-column position-static">
+                                <strong  id="showaddr" class="d-inline-block mb-2 text-primary"></strong>
+                                <h3 id="balanceNum" class="mb-0">$ 0.00</h3>
+                                <div id="nowDiv" class="mb-1 text-muted"></div>
+                                <p class="card-text mb-auto">The Balance is counted by user's transcation between 2015 and 2016.</p>
+    <!--                            <a href="#" class="stretched-link" th:href="'javascript:goDetails()'">Transcation Details</a>-->
+                            </div>
+                            <div class="col-auto d-none d-lg-block">
+                                <img th:src="@{/img/download.jpg}"  width="350" height="300" class="img-thumbnail">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="showDough" style="display:none;">
+                    <div id="container1" >
+                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                            <h3>Input & Output</h3>
+                        </div>
+                        <canvas  class="my-4 chartjs-render-monitor " id="myDoughnutChart" width="1076" height="454"
+                                style="display: block; width: 1076px; height: 454px;" ></canvas>
+                    </div>
+                    <div id="container2">
+                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                            <h3>Trading Circle</h3>
+                        </div>
+                        <canvas  class="my-4 chartjs-render-monitor " id="myDoughnutChart2" width="1076" height="454"
+                                 style="display: block; width: 1076px; height: 454px;" ></canvas>
+                    </div>
+                </div>
+            </main>
+
+        </div>
+
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/javascript" src="asserts/js/jquery-3.2.1.slim.min.js" th:src="@{/webjars/jquery/3.0.0/jquery.js}"></script>
+    <script type="text/javascript" src="asserts/js/popper.min.js" th:src="@{/webjars/popper.js/1.14.3/popper.js}"></script>
+    <script type="text/javascript" src="asserts/js/bootstrap.min.js" th:src="@{/webjars/bootstrap/4.3.1/js/bootstrap.js}"></script>
+
+    <!-- Icons -->
+    <script type="text/javascript" src="asserts/js/feather.min.js" th:src="@{/asserts/js/feather.min.js}"></script>
+    <script>
+        feather.replace()
+    </script>
+    <script type="text/javascript" src="asserts/js/Chart.min.js" th:src="@{/asserts/js/Chart.min.js}"></script>
+    <script>
+        function freshDough(res) {
+            $('#myDoughnutChart').remove();
+            $('#container1').append('<canvas  class="my-4 chartjs-render-monitor " id="myDoughnutChart" width="1076" height="454"\n' +
+                '                                 style="display: block; width: 1076px; height: 454px;" ></canvas>');
+            var ctx = document.getElementById("myDoughnutChart");
+
+            data = {
+                datasets: [
+                    {
+                        data: res,
+                        backgroundColor: [
+                            "rgb(255, 99, 132)","rgb(54, 162, 235)"/*,"rgb(255,205,86)"*/
+
+                        ]
+                    }
+                ],
+
+                // These labels appear in the legend and in the tooltips when hovering different arcs
+                labels: ["Input", "Output"]
+            };
+            // options = {
+            //     scales: {
+            //         yAxes: [{
+            //             ticks: {
+            //                 beginAtZero:true
+            //             }
+            //         }]
+            //     }
+            // };
+            var myDoughnutChart = new Chart(ctx, {
+                type: "doughnut",
+                data: data
+                // options: options
+            });
+        }
+
+    </script>
+    <script>
+        function freshDough2(res) {
+            $('#myDoughnutChart2').remove();
+            $('#container2').append('<canvas  class="my-4 chartjs-render-monitor " id="myDoughnutChart2" width="1076" height="454"\n' +
+                '                                 style="display: block; width: 1076px; height: 454px;" ></canvas>');
+            var ctx = document.getElementById("myDoughnutChart2");
+            colors = []
+            for( i=0;i<res.length;i++){
+                colors.push(getRandomColor());
+            }
+            friend = []
+            value = []
+            for (i in res){
+                friend.push(res[i]['friend']);
+                value.push(res[i]['value']);
+            }
+            data = {
+                datasets: [
+                    {
+                        data: value,
+                        backgroundColor: colors
+                    }
+                ],
+
+                // These labels appear in the legend and in the tooltips when hovering different arcs
+                labels:friend
+            };
+
+            var myDoughnutChart2 = new Chart(ctx, {
+                type: "doughnut",
+                data: data
+            });
+
+        }
+        //颜色对象
+        function getRandomColor(){
+            r = Math.floor(Math.random()*255);
+            g = Math.floor(Math.random()*255);
+            b = Math.floor(Math.random()*255);
+            return 'rgba('+ r +','+ g +','+ b +',0.8)';
+        }
+    </script>
+    <script>
+        function show(){
+            //展示当前日期
+            var date = new Date();
+            var now = "";
+            now = date.getFullYear()+"/";
+            now = now + (date.getMonth()+1)+"/"; //取月的时候取的是当前月-1
+            now = now + date.getDate()+" ";
+            now = now + date.getHours()+":";
+            if(date.getMinutes() < 10){
+                now = now + "0" + date.getMinutes();
+            }else{
+                now = now + date.getMinutes();
+            }
+            document.getElementById("nowDiv").innerHTML = now; //div的html是now这个字符串
+            setTimeout("show()",1000); //设置过1000毫秒就是1秒，调用show方法
+
+        }
+
+    </script>
+    <script>
+        //用户搜索处理函数
+        $('#addr').on("keydown",function(event){
+            var keyCode = event.keyCode || event.which;
+            if(keyCode == "13"){
+                searchAddr();
+                $("#addr").blur();
+            }
+        });
+        function searchAddr() {
+            var addr = $("#addr").val();
+            //去掉空格
+            addr = addr.replace(/^\s*|\s*$/g,"");
+            if(addr!=""){
+                $.post("/user/getId",{'useraddr':addr},function (result) {
+                    if(result!=-1){
+
+                        var showaddr = document.getElementById("showaddr");
+                        showaddr.innerText = addr;
+
+                        $.post("/user/balance", {'useraddr':addr},function (results,status) {
+                            var balanceNum = document.getElementById("balanceNum");
+                            balanceNum.innerText = '$ ' + results;
+                        });
+                        $.get("/user/getInAndOut",{'useraddr':addr},function (res) {
+                            freshDough(res);
+                        });
+                        $.get("/user/getCircle",{'useraddr':addr},function (res) {
+                            freshDough2(res);
+                        });
+                        document.getElementById("showDough").style.display="";
+                    }else{
+                        var showaddr = document.getElementById("showaddr");
+                        showaddr.innerText = "The user is not exist!";
+                        var balanceNum = document.getElementById("balanceNum");
+                        balanceNum.innerText = '$ 0.00';
+                        document.getElementById("showDough").style.display="none";
+                    }
+                });
+            }else{
+                var showaddr = document.getElementById("showaddr");
+                showaddr.innerText = "";
+                var balanceNum = document.getElementById("balanceNum");
+                balanceNum.innerText = '$ 0.00';
+            }
+
+        };
+
+    </script>
+</body>
+</html>
